@@ -16,9 +16,9 @@ OFF_DURATION = 300  # seconds (5 minutes)
 
 # PID parameters (these will need tuning for your specific freezer)
 # Start with general values and adjust based on performance.
-Kp = 10.0
-Ki = 0.5
-Kd = 1.0
+Kp = 10.0 #10
+Ki = 0.5 # .5
+Kd = 1.  # 1
 SAMPLE_TIME = 10 # seconds
 
 # --- Setup ---
@@ -67,10 +67,10 @@ def read_temperature():
 def control_freezer(on_time_percent):
     """Controls the freezer on/off time based on PID output percentage over a short interval."""
     # We implement a simple PWM-like control here over the SAMPLE_TIME
-    if on_time_percent >= 100:
+    if on_time_percent >= 100: # 
         GPIO.output(GPIO_PIN, GPIO.HIGH)
         time.sleep(SAMPLE_TIME)
-    elif on_time_percent <= 0:
+    elif on_time_percent <= 0: # 
         GPIO.output(GPIO_PIN, GPIO.LOW)
         time.sleep(SAMPLE_TIME)
     else:
