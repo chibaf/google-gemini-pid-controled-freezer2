@@ -21,7 +21,7 @@ KD = 50.0
 # --- Initialize Hardware and PID ---
 
 # GPIO Setup
-GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BOARD)
 GPIO.setup(GPIO_PIN, GPIO.OUT)
 GPIO.output(GPIO_PIN, GPIO.LOW) # Ensure freezer starts OFF
 
@@ -48,10 +48,11 @@ def read_temperature():
         line = ser.readline().decode('utf-8').strip()
         if line:
             parts = line.split(',')
-            if parts[0] == '03' and len(parts) > 3:
+            if parts[0] == '03' and len(parts) > 10:
                 try:
                     # data2 is at index 2 of the split list
-                    temperature = float(parts[2])
+                    temperature = float(parts[3])
+                    print(temperature)
                     return temperature
                 except ValueError:
                     print(f"Bad data format or conversion error in data2: {parts[2]}")

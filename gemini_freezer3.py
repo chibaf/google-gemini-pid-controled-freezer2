@@ -2,6 +2,7 @@ import serial
 import time
 import RPi.GPIO as GPIO
 from simple_pid import PID
+from datetime import date
 
 # --- Configuration ---
 TARGET_TEMP = -20.0 # Target temperature in Celsius
@@ -12,16 +13,21 @@ CYCLE_TIME = 1800   # Total cycle time in seconds (30 minutes)
 PID_CONTROL_DURATION = 1500 # PID control phase duration in seconds (25 minutes)
 OFF_DURATION = 300  # Mandatory off phase duration in seconds (5 minutes)
 
+current_time = time.strftime("_H%H_M%M_S%S", time.localtime())
+fn = "Gemini_" + str(date.today()) + current_time + ".csv"
+f=open(fn, 'w', encoding="utf-8")
+start = time.time()
+
 # PID parameters (these will likely need tuning for your specific freezer)
 # Start with general values and adjust as needed for stability and response.
 KP = 10.0
 KI = 0.05
-KD = 50.0
+KD = 0.05
 
 # --- Initialize Hardware and PID ---
 
 # GPIO Setup
-GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BOARD)
 GPIO.setup(GPIO_PIN, GPIO.OUT)
 GPIO.output(GPIO_PIN, GPIO.LOW) # Ensure freezer starts OFF
 
@@ -38,7 +44,7 @@ except serial.SerialException as e:
 pid = PID(KP, KI, KD, setpoint=TARGET_TEMP)
 # We limit the PID output to a range suitable for time-proportional control (0 to 1)
 # where 1 is full on time and 0 is full off time within the control phase.
-pid.output_limits = (0, 1)
+pid.output_limits = (0.7, 1)
 
 # --- Functions ---
 
@@ -48,10 +54,11 @@ def read_temperature():
         line = ser.readline().decode('utf-8').strip()
         if line:
             parts = line.split(',')
-            if parts[0] == '03' and len(parts) > 3:
+            if parts[0] == '03' and len(parts) > 10:
                 try:
                     # data2 is at index 2 of the split list
-                    temperature = float(parts[2])
+                    temperature = float(parts[3])
+                    #print(temperature)
                     return temperature
                 except ValueError:
                     print(f"Bad data format or conversion error in data2: {parts[2]}")
@@ -84,12 +91,18 @@ try:
                 # Time-proportional control: calculate ON time based on PID output
                 # We use a short cycle time here (e.g., 60 seconds) for responsiveness
                 # within the larger 1500s window.
-                sub_cycle_duration = 60 # seconds
+                sub_cycle_duration = 30 # seconds
                 on_time_sub = control_output * sub_cycle_duration
                 off_time_sub = sub_cycle_duration - on_time_sub
                 
                 print(f"Temp: {current_temp:.2f}C, PID Output: {control_output:.2f}, On Time: {on_time_sub:.2f}s, Off Time: {off_time_sub:.2f}s")
-
+                st = time.strftime("%Y %b %d %H:%M:%S", time.localtime())
+                ss = str(time.time() - int(time.time()))
+                sss=str(round(time.time()-start, 2))
+                row=st + ss[1:5] + "," + sss + ","
+                row=row+str(current_temp)+"\n"
+                f.write(row)
+                print(row)
                 # Act on the freezer for this sub-cycle
                 control_freezer(on_time_sub, off_time_sub)
             else:
@@ -113,3 +126,4 @@ finally:
     GPIO.output(GPIO_PIN, GPIO.LOW)
     GPIO.cleanup()
     ser.close()
+    f.close()

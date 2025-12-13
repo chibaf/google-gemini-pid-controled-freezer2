@@ -16,12 +16,12 @@ OFF_DURATION = 300  # Mandatory off phase duration in seconds (5 minutes)
 # Start with general values and adjust as needed for stability and response.
 KP = 10.0
 KI = 0.05
-KD = 50.0
+KD = 0.05
 
 # --- Initialize Hardware and PID ---
 
 # GPIO Setup
-GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BOARD)
 GPIO.setup(GPIO_PIN, GPIO.OUT)
 GPIO.output(GPIO_PIN, GPIO.LOW) # Ensure freezer starts OFF
 
@@ -38,7 +38,7 @@ except serial.SerialException as e:
 pid = PID(KP, KI, KD, setpoint=TARGET_TEMP)
 # We limit the PID output to a range suitable for time-proportional control (0 to 1)
 # where 1 is full on time and 0 is full off time within the control phase.
-pid.output_limits = (0, 1)
+pid.output_limits = (0.7, 1)
 
 # --- Functions ---
 
@@ -48,10 +48,11 @@ def read_temperature():
         line = ser.readline().decode('utf-8').strip()
         if line:
             parts = line.split(',')
-            if parts[0] == '03' and len(parts) > 3:
+            if parts[0] == '03' and len(parts) > 10:
                 try:
                     # data2 is at index 2 of the split list
-                    temperature = float(parts[2])
+                    temperature = float(parts[3])
+                    print(temperature)
                     return temperature
                 except ValueError:
                     print(f"Bad data format or conversion error in data2: {parts[2]}")
@@ -84,7 +85,7 @@ try:
                 # Time-proportional control: calculate ON time based on PID output
                 # We use a short cycle time here (e.g., 60 seconds) for responsiveness
                 # within the larger 1500s window.
-                sub_cycle_duration = 60 # seconds
+                sub_cycle_duration = 30 # seconds
                 on_time_sub = control_output * sub_cycle_duration
                 off_time_sub = sub_cycle_duration - on_time_sub
                 
