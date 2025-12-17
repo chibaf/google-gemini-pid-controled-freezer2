@@ -24,7 +24,7 @@ def read_temperature():
                 try:
                     # data2 is at index 2 of the split list
                     temperature = [float(parts[2]),float(parts[3])]
-                    #print(temperature)
+                    print(temperature)
                     return temperature
                 except ValueError:
                     print(f"Bad data format or conversion error in data2: {parts[2]}")
@@ -84,13 +84,14 @@ def main():
         pv += control * dt  # Update process variable based on control output (simplified)
         previous_error = error
 
-        if 0<(now-time0)<1500:
-          if error-pv<0:
+        if 0<=(now-time0)<1500:
+          if error<0:
             GPIO.output(GPIO_PIN,1)
           else:
             GPIO.output(GPIO_PIN,0)
         elif 1500<=(now-time0)<=1800:
           GPIO.output(GPIO_PIN,0)
+        else:
           time0=time.time()
         time_steps.append(i * dt)
         pv_values.append(pv)
