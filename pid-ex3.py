@@ -30,7 +30,7 @@ def read_temperature():
                     print(f"Bad data format or conversion error in data2: {parts[2]}")
     except Exception as e:
         print(f"Serial reading error: {e}")
-    return [0,0]
+        return [0,0]
 
 
 def pid_controller(setpoint, pv, kp, ki, kd, previous_error, integral, dt):
@@ -51,10 +51,14 @@ def main():
     previous_error = 10
     integral = 0
     dt = 0.1  # Time step
-    time_steps = []
-    pv_values = []
-    control_values = []
-    setpoint_values = []
+#    time_steps = []
+#    pv_values = []
+#    control_values = []
+#    setpoint_values = []
+    x=range(0,100)
+    y1=[0]*100
+    y2=[0]*100
+#
     i=0
 #    for i in range(100):  # Simulate for 100 time steps
 # GPIO Setup
@@ -80,6 +84,8 @@ def main():
     while 1:
         now=time.time()
         temp=read_temperature()
+        if temp[0]==0 and temp[1]==0:
+          continue
         pv=temp[1]
         i=i+1
         time.sleep(1)
@@ -99,10 +105,10 @@ def main():
           GPIO.output(GPIO_PIN,0)
         else:
           time0=time.time()
-        time_steps.append(i * dt)
-        pv_values.append(pv)
-        control_values.append(control)
-        setpoint_values.append(setpoint)
+#        time_steps.append(i * dt)
+#        pv_values.append(pv)
+#        control_values.append(control)
+#        setpoint_values.append(setpoint)
         print(str(error)+": "+str(i))
         st = time.strftime("%Y %b %d %H:%M:%S", time.localtime())
         ss = str(time.time() - int(time.time()))
@@ -110,6 +116,16 @@ def main():
         row=st + ss[1:5] + "," + sss + ","
         row=row+str(temp[0])+","+str(temp[1])+","+str(ssr18)+"\n"
         f.write(row)
+#
+        plt.clf()
+        y1.pop(-1)
+        y1.insert(0,temp[0])
+        y2.pop(-1)
+        y2.insert(0,temp[1])
+        plt.ylim(-30,20)
+        plt.plot(x,y1)
+        plt.plot(x,y2)
+        plt.pause(0.1)
 #        plt.clf()
 #        time.sleep(dt)
 #        plt.figure(figsize=(12, 6))
