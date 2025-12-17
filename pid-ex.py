@@ -20,7 +20,10 @@ def main():
     pv_values = []
     control_values = []
     setpoint_values = []
-    for i in range(100):  # Simulate for 100 time steps
+    i=-1
+#    for i in range(100):  # Simulate for 100 time steps
+    while 1:
+        i=i+1
         control, error, integral = pid_controller(setpoint, pv, kp, ki, kd, previous_error, integral, dt)
         pv += control * dt  # Update process variable based on control output (simplified)
         previous_error = error
@@ -29,24 +32,26 @@ def main():
         pv_values.append(pv)
         control_values.append(control)
         setpoint_values.append(setpoint)
-
+        
+        plt.clf()
         time.sleep(dt)
         plt.figure(figsize=(12, 6))
-        plt.clf()
+#        plt.title(str(i))
         plt.subplot(2, 1, 1)
         plt.plot(time_steps, pv_values, label='Process Variable (PV)')
         plt.plot(time_steps, setpoint_values, label='Setpoint', linestyle='--')
         plt.xlabel('Time (s)')
         plt.ylabel('Value')
-        plt.title('Process Variable vs. Setpoint')
+        plt.title('Process Variable vs. Setpoint '+str(i))
         plt.legend()
 
         plt.subplot(2, 1, 2)
+ #       plt.title(str(i))
         plt.plot(time_steps, control_values, label='Control Output')
         plt.xlabel('Time (s)')
         plt.xlabel('Time (s)')
         plt.ylabel('Control Output')
-        plt.title('Control Output over Time')
+        plt.title('Control Output over Time '+str(i))
         plt.legend()
 
         plt.tight_layout()
