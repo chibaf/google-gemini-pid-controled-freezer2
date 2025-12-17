@@ -27,9 +27,9 @@ plt.ylim(-25,10)
 
 # PID parameters (these will likely need tuning for your specific freezer)
 # Start with general values and adjust as needed for stability and response.
-KP = 10.0
-KI = 0.5
-KD = 0.5
+KP = 5.0
+KI = 1.0
+KD = 1.0
 
 # --- Initialize Hardware and PID ---
 
@@ -103,7 +103,7 @@ try:
                 # Time-proportional control: calculate ON time based on PID output
                 # We use a short cycle time here (e.g., 60 seconds) for responsiveness
                 # within the larger 1500s window.
-                sub_cycle_duration = 10 # seconds
+                sub_cycle_duration = 30 # seconds
                 on_time_sub = control_output * sub_cycle_duration
                 off_time_sub = sub_cycle_duration - on_time_sub
                 
