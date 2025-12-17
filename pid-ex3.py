@@ -40,6 +40,9 @@ def pid_controller(setpoint, pv, kp, ki, kd, previous_error, integral, dt):
     control = kp * error + ki * integral + kd * derivative
     return control, error, integral
 def main():
+    fn = "Ex3_" + str(date.today()) + time.strftime("_H%H_M%M_S%S", time.localtime()) + ".csv"
+    f=open(fn, 'w', encoding="utf-8")
+    start=time.time()
     setpoint = -20.0  # Desired setpoint
     pv = 0  # Initial process variable
     kp = 1.0  # Proportional gain
@@ -83,13 +86,16 @@ def main():
         control, error, integral = pid_controller(setpoint, pv, kp, ki, kd, previous_error, integral, dt)
         pv += control * dt  # Update process variable based on control output (simplified)
         previous_error = error
-
+        ssr18=""
         if 0<=(now-time0)<1500:
           if error<0:
+            ssr18="1"
             GPIO.output(GPIO_PIN,1)
           else:
+            ssr18="0"
             GPIO.output(GPIO_PIN,0)
         elif 1500<=(now-time0)<=1800:
+          ssr18="0"
           GPIO.output(GPIO_PIN,0)
         else:
           time0=time.time()
@@ -98,6 +104,12 @@ def main():
         control_values.append(control)
         setpoint_values.append(setpoint)
         print(str(error)+": "+str(i))
+        st = time.strftime("%Y %b %d %H:%M:%S", time.localtime())
+        ss = str(time.time() - int(time.time()))
+        sss=str(round(time.time()-start,2))
+        row=st + ss[1:5] + "," + sss + ","
+        row=row+str(temp[0])+","+str(temp[1])+","+str(ssr18)+"\n"
+        f.write(row)
 #        plt.clf()
 #        time.sleep(dt)
 #        plt.figure(figsize=(12, 6))
