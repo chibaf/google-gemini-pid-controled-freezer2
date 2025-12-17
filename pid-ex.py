@@ -55,7 +55,8 @@ def main():
         plt.legend()
 
         plt.tight_layout()
-        plt.pause(0.1)        
+        plt.show()        
+        plt.pause(0.1) 
 
 if __name__ == "__main__":
     main()
