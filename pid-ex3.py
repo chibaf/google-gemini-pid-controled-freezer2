@@ -84,7 +84,10 @@ def main():
     while 1:
         now=time.time()
         temp=read_temperature()
-        if temp[0]==0 and temp[1]==0:
+        try:
+          if temp[0]==0 and temp[1]==0:
+            continue
+        except:
           continue
         pv=temp[1]
         i=i+1
