@@ -98,7 +98,7 @@ def main():
         previous_error = error
         ssr18=""
         if 0<=(now-time0)<1500:
-          if pv<0:
+          if error<0.:
             ssr18="1"
             GPIO.output(GPIO_PIN,1)
           else:
@@ -120,13 +120,14 @@ def main():
         row=st + ss[1:5] + "," + sss + ","
         row=row+str(temp[0])+","+str(temp[1])+","+str(ssr18)+"\n"
         f.write(row)
-#
+        ttl="time="+str(round(now-time0,2))+",ssr18="+str(ssr18)+",temp1="+str(round(temp[0],2))+",temp2="+str(round(temp[1],2))
         plt.clf()
         y1.pop(-1)
         y1.insert(0,temp[0])
         y2.pop(-1)
         y2.insert(0,temp[1])
         plt.ylim(-30,20)
+        plt.title(ttl)
         plt.plot(x,y1)
         plt.plot(x,y2)
         plt.pause(0.1)
