@@ -50,7 +50,7 @@ def main():
     kd = 0.  # Derivative gain
     previous_error = 10
     integral = 0
-    dt = 0.1  # Time step
+    dt = 1. # Time step
 #    time_steps = []
 #    pv_values = []
 #    control_values = []
@@ -89,13 +89,13 @@ def main():
             continue
         except:
           continue
-        pv=temp[1]
         i=i+1
         time.sleep(1)
+        pv=temp[1]
         control, error, integral = pid_controller(setpoint, pv, kp, ki, kd, previous_error, integral, dt)
         print(control, error, integral)
         pv += control * dt  # Update process variable based on control output (simplified)
-        previous_error = error
+        previous_error=error #error
         ssr18=""
         if 0<=(now-time0)<1500:
           if error<0.:
@@ -116,7 +116,7 @@ def main():
         row=st + ss[1:5] + "," + sss + ","
         row=row+str(temp[0])+","+str(temp[1])+","+str(ssr18)+"\n"
         f.write(row)
-        ttl="time="+str(round(now-time0,2))+",ssr18="+str(ssr18)+",temp1="+str(round(temp[0],2))+",temp2="+str(round(temp[1],2))
+        ttl="total time="+str(round(time.time()-time0,2))+" time/interval="+str(round(now-time0,2))+",ssr18="+str(ssr18)+",temp1="+str(round(temp[0],2))+",temp2="+str(round(temp[1],2))
         plt.clf()
         y1.pop(-1)
         y1.insert(0,temp[0])
