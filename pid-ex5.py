@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 TARGET_TEMP = -20.0 # Target temperature in Celsius
 SERIAL_PORT = '/dev/ttyUSB0'
 BAUDRATE = 115200
-GPIO_PIN = 18       # BCM pin number (GPIO 18)
 CYCLE_TIME = 100   # Total cycle time in seconds (30 minutes)
 PID_CONTROL_DURATION = 1500 # PID control phase duration in seconds (25 minutes)
 OFF_DURATION = 300  # Mandatory off phase duration in seconds (5 minutes)
@@ -51,16 +50,11 @@ def main():
     previous_error = 10
     integral = 0
     dt = 1. # Time step
-#    time_steps = []
-#    pv_values = []
-#    control_values = []
-#    setpoint_values = []
     x=range(0,100)
     y1=[0]*100
     y2=[0]*100
 #
     i=0
-#    for i in range(100):  # Simulate for 100 time steps
 # GPIO Setup
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(18, GPIO.OUT)
@@ -68,7 +62,6 @@ def main():
     TARGET_TEMP = -20.0 # Target temperature in Celsius
     SERIAL_PORT = '/dev/ttyUSB0'
     BAUDRATE = 115200
-    GPIO_PIN = 18       # BCM pin number (GPIO 18)
     CYCLE_TIME = 100   # Total cycle time in seconds (30 minutes)
     PID_CONTROL_DURATION = 1500 # PID control phase duration in seconds (25 minutes)
     OFF_DURATION = 300  # Mandatory off phase duration in seconds (5 minutes)
@@ -82,6 +75,7 @@ def main():
 
     time0=time.time()
     while 1:
+      try:
         now=time.time()
         temp=read_temperature()
         try:
@@ -100,13 +94,13 @@ def main():
         if 0<=(now-time0)<1500:
           if error<0.:
             ssr18="1"
-            GPIO.output(GPIO_PIN,1)
+            GPIO.output(18,1)
           else:
             ssr18="0"
-            GPIO.output(GPIO_PIN,0)
+            GPIO.output(18,0)
         elif 1500<=(now-time0)<=1800:
           ssr18="0"
-          GPIO.output(GPIO_PIN,0)
+          GPIO.output(18,0)
         else:
           time0=time.time()
         print(str(error)+": "+str(i))
@@ -116,7 +110,7 @@ def main():
         row=st + ss[1:5] + "," + sss + ","
         row=row+str(temp[0])+","+str(temp[1])+","+str(ssr18)+"\n"
         f.write(row)
-        ttl="total time="+str(round(time.time()-time0,2))+" time/interval="+str(round(now-time0,2))+",ssr18="+str(ssr18)+",temp1="+str(round(temp[0],2))+",temp2="+str(round(temp[1],2))
+        ttl="total time="+str(round(time.time()-start,2))+" time="+str(round(now-time0,2))+",ssr18="+str(ssr18)+",temp1="+str(round(temp[0],2))+",temp2="+str(round(temp[1],2))
         plt.clf()
         y1.pop(-1)
         y1.insert(0,temp[0])
@@ -127,6 +121,12 @@ def main():
         plt.plot(x,y1)
         plt.plot(x,y2)
         plt.pause(0.1)
+      except KeyboardInterrupt:
+        print("Program stopped by user. Cleaning up GPIO.")
+        ser.close()
+        f.close()
+        GPIO.output(18,0)
+        GPIO.cleanup()
 
 if __name__ == "__main__":
     main()
